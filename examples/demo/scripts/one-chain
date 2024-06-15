@@ -63,24 +63,27 @@ if ! mkdir -p $CHAINDIR/$CHAINID 2>/dev/null; then
     echo "Failed to create chain folder. Aborting..."
     exit 1
 fi
+# Build genesis file incl account for passed address 10000000000000000000000000
+coins="10000000000000000000000000000000$DENOM,10000000000000000000000000000000$BASEDENOM"
+delegate="100000000000000$DENOM"
 
-# Build genesis file incl account for passed address
-coins="100000000000$DENOM,100000000000$BASEDENOM"
-delegate="100000000000$DENOM"
-
-redirect $BINARY --home $CHAINDIR/$CHAINID --chain-id $CHAINID init $CHAINID 
+redirect $BINARY --home $CHAINDIR/$CHAINID --chain-id $CHAINID init $CHAINID
 sleep 1
 $BINARY --home $CHAINDIR/$CHAINID keys add validator $KEYRING --output json > $CHAINDIR/$CHAINID/validator_seed.json 2>&1
 sleep 1
 $BINARY --home $CHAINDIR/$CHAINID keys add user $KEYRING --output json > $CHAINDIR/$CHAINID/key_seed.json 2>&1
 sleep 1
-redirect $BINARY --home $CHAINDIR/$CHAINID add-genesis-account $($BINARY --home $CHAINDIR/$CHAINID keys $KEYRING show user -a) $coins 
+redirect $BINARY --home $CHAINDIR/$CHAINID genesis add-genesis-account $($BINARY --home $CHAINDIR/$CHAINID keys $KEYRING show user -a) $coins
 sleep 1
-redirect $BINARY --home $CHAINDIR/$CHAINID add-genesis-account $($BINARY --home $CHAINDIR/$CHAINID keys $KEYRING show validator -a) $coins 
+redirect $BINARY --home $CHAINDIR/$CHAINID genesis add-genesis-account $($BINARY --home $CHAINDIR/$CHAINID keys $KEYRING show validator -a) $coins
 sleep 1
-redirect $BINARY --home $CHAINDIR/$CHAINID gentx validator $delegate $KEYRING --chain-id $CHAINID
+redirect $BINARY --home $CHAINDIR/$CHAINID genesis add-genesis-account cosmos17vukm70t2l8wypuu39t9qz59d9kfeml9yaqpvv $coins
 sleep 1
-redirect $BINARY --home $CHAINDIR/$CHAINID collect-gentxs 
+redirect $BINARY --home $CHAINDIR/$CHAINID genesis add-genesis-account cosmos1z35mu63h82kwn7wqgqq4jkjd9nk9kpamxkka4w $coins
+sleep 1
+redirect $BINARY --home $CHAINDIR/$CHAINID genesis gentx validator $delegate $KEYRING --chain-id $CHAINID
+sleep 1
+redirect $BINARY --home $CHAINDIR/$CHAINID genesis collect-gentxs
 sleep 1
 
 # Check platform
@@ -111,6 +114,5 @@ else
   sed -i '' 's/"bond_denom": "stake"/"bond_denom": "'"$DENOM"'"/g' $CHAINDIR/$CHAINID/config/genesis.json
   # sed -i '' 's#index-events = \[\]#index-events = \["message.action","send_packet.packet_src_channel","send_packet.packet_sequence"\]#g' $CHAINDIR/$CHAINID/config/app.toml
 fi
-
 # Start the gaia
-$BINARY --home $CHAINDIR/$CHAINID start --pruning=nothing --grpc-web.enable=false --grpc.address="0.0.0.0:$GRPCPORT" > $CHAINDIR/$CHAINID.log 2>&1 &
+$BINARY --home $CHAINDIR/$CHAINID start --pruning=nothing --grpc-web.enable=false --grpc.address="0.0.0.0:$GRPCPORT" --minimum-gas-prices="0$DENOM" > $CHAINDIR/$CHAINID.log 2>&1 &
