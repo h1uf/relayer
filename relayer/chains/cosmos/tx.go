@@ -102,6 +102,48 @@ func ensureSequenceGuard(cc *CosmosProvider, key string) *WalletState {
 	return sequenceGuard
 }
 
+func (cc *CosmosProvider) SendMessagesWithGas(ctx context.Context, msgs []provider.RelayerMessage, memo string, gas uint64) (*provider.RelayerTxResponse, bool, error) {
+	var (
+		rlyResp     *provider.RelayerTxResponse
+		callbackErr error
+		wg          sync.WaitGroup
+	)
+
+	callback := func(rtr *provider.RelayerTxResponse, err error) {
+		rlyResp = rtr
+		callbackErr = err
+		wg.Done()
+	}
+
+	wg.Add(1)
+
+	if err := retry.Do(func() error {
+		return cc.SendMessagesToMempoolWithGas(ctx, msgs, memo, gas, ctx, []func(*provider.RelayerTxResponse, error){callback})
+	}, retry.Context(ctx), rtyAtt, rtyDel, rtyErr, retry.OnRetry(func(n uint, err error) {
+		cc.log.Info(
+			"Error building or broadcasting transaction",
+			zap.String("chain_id", cc.PCfg.ChainID),
+			zap.Uint("attempt", n+1),
+			zap.Uint("max_attempts", rtyAttNum),
+			zap.Error(err),
+		)
+	})); err != nil {
+		return nil, false, err
+	}
+
+	wg.Wait()
+
+	if callbackErr != nil {
+		return rlyResp, false, callbackErr
+	}
+
+	if rlyResp.Code != 0 {
+		return rlyResp, false, fmt.Errorf("transaction failed with code: %d", rlyResp.Code)
+	}
+
+	return rlyResp, true, callbackErr
+}
+
 // SendMessages attempts to sign, encode, & send a slice of RelayerMessages
 // This is used extensively in the relayer as an extension of the Provider interface
 //
@@ -218,6 +260,68 @@ func (cc *CosmosProvider) SendMessagesToMempool(
 	return nil
 }
 
+func (cc *CosmosProvider) SendMessagesToMempoolWithGas(
+	ctx context.Context,
+	msgs []provider.RelayerMessage,
+	memo string,
+	gas uint64,
+	asyncCtx context.Context,
+	asyncCallbacks []func(*provider.RelayerTxResponse, error),
+) error {
+	txSignerKey, feegranterKeyOrAddr, err := cc.buildSignerConfig(msgs)
+	if err != nil {
+		return err
+	}
+
+	sequenceGuard := ensureSequenceGuard(cc, txSignerKey)
+	sequenceGuard.Mu.Lock()
+	defer sequenceGuard.Mu.Unlock()
+
+	dynamicFee := cc.DynamicFee(ctx)
+
+	txBytes, sequence, fees, err := cc.buildMessages(
+		ctx,
+		msgs,
+		memo,
+		gas,
+		txSignerKey,
+		feegranterKeyOrAddr,
+		sequenceGuard,
+		dynamicFee,
+	)
+
+	if err != nil {
+		// Account sequence mismatch errors can happen on the simulated transaction also.
+		if strings.Contains(err.Error(), legacyerrors.ErrWrongSequence.Error()) {
+			cc.handleAccountSequenceMismatchError(sequenceGuard, err)
+		}
+
+		return err
+	}
+
+	err = cc.broadcastTx(
+		ctx,
+		txBytes,
+		msgs,
+		fees,
+		asyncCtx,
+		defaultBroadcastWaitTimeout,
+		asyncCallbacks,
+		dynamicFee,
+	)
+
+	if err != nil {
+		if strings.Contains(err.Error(), legacyerrors.ErrWrongSequence.Error()) {
+			cc.handleAccountSequenceMismatchError(sequenceGuard, err)
+		}
+
+		return err
+	}
+
+	// we had a successful tx broadcast with this sequence, so update it to the next
+	cc.updateNextAccountSequence(sequenceGuard, sequence+1)
+	return nil
+}
 func (cc *CosmosProvider) SubmitTxAwaitResponse(ctx context.Context, msgs []sdk.Msg, memo string, gas uint64, signingKeyName string) (*txtypes.GetTxResponse, error) {
 	resp, err := cc.SendMsgsWith(ctx, msgs, memo, gas, signingKeyName, "")
 	if err != nil {
