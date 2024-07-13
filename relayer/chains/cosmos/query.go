@@ -782,10 +782,10 @@ func (cc *CosmosProvider) GenerateConnHandshakeProof(ctx context.Context, height
 	if err != nil {
 		return nil, nil, nil, nil, clienttypes.Height{}, err
 	}
-
+	scs := clientState.(*tmclient.ClientState)
 	eg.Go(func() error {
 		var err error
-		consensusStateRes, err = cc.QueryClientConsensusState(ctx, height, clientId, clientState.GetLatestHeight())
+		consensusStateRes, err = cc.QueryClientConsensusState(ctx, height, clientId, scs.LatestHeight)
 		return err
 	})
 	eg.Go(func() error {
@@ -1219,45 +1219,46 @@ func (cc *CosmosProvider) QueryStatus(ctx context.Context) (*coretypes.ResultSta
 	return status, nil
 }
 
-// QueryDenomTrace takes a denom from IBC and queries the information about it
-func (cc *CosmosProvider) QueryDenomTrace(ctx context.Context, denom string) (*transfertypes.DenomTrace, error) {
-	transfers, err := transfertypes.NewQueryClient(cc).DenomTrace(ctx,
-		&transfertypes.QueryDenomTraceRequest{
-			Hash: denom,
-		})
-	if err != nil {
-		return nil, err
-	}
-
-	return transfers.DenomTrace, nil
-}
-
-// QueryDenomTraces returns all the denom traces from a given chain
-func (cc *CosmosProvider) QueryDenomTraces(ctx context.Context, offset, limit uint64, height int64) ([]transfertypes.DenomTrace, error) {
-	qc := transfertypes.NewQueryClient(cc)
-	p := DefaultPageRequest()
-	transfers := []transfertypes.DenomTrace{}
-	for {
-		res, err := qc.DenomTraces(ctx,
-			&transfertypes.QueryDenomTracesRequest{
-				Pagination: p,
-			})
-
-		if err != nil || res == nil {
-			return nil, err
-		}
-
-		transfers = append(transfers, res.DenomTraces...)
-		next := res.GetPagination().GetNextKey()
-		if len(next) == 0 {
-			break
-		}
-
-		time.Sleep(PaginationDelay)
-		p.Key = next
-	}
-	return transfers, nil
-}
+//
+//// QueryDenomTrace takes a denom from IBC and queries the information about it
+//func (cc *CosmosProvider) QueryDenomTrace(ctx context.Context, denom string) (*transfertypes.Hop, error) {
+//	transfers, err := transfertypes.NewQueryClient(cc).DenomTrace(ctx,
+//		&transfertypes.QueryDenomTracesRequest{
+//			Hash: denom,
+//		})
+//	if err != nil {
+//		return nil, err
+//	}
+//
+//	return transfers.DenomTrace, nil
+//}
+//
+//// QueryDenomTraces returns all the denom traces from a given chain
+//func (cc *CosmosProvider) QueryDenomTraces(ctx context.Context, offset, limit uint64, height int64) ([]transfertypes.Hop, error) {
+//	qc := transfertypes.NewQueryClient(cc)
+//	p := DefaultPageRequest()
+//	transfers := []transfertypes.Hop{}
+//	for {
+//		res, err := qc.DenomTraces(ctx,
+//			&transfertypes.QueryDenomTracesRequest{
+//				Pagination: p,
+//			})
+//
+//		if err != nil || res == nil {
+//			return nil, err
+//		}
+//
+//		transfers = append(transfers, res.DenomTraces...)
+//		next := res.GetPagination().GetNextKey()
+//		if len(next) == 0 {
+//			break
+//		}
+//
+//		time.Sleep(PaginationDelay)
+//		p.Key = next
+//	}
+//	return transfers, nil
+//}
 
 func (cc *CosmosProvider) QueryDenomHash(ctx context.Context, trace string) (string, error) {
 	qc := transfertypes.NewQueryClient(cc)

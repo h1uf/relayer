@@ -149,7 +149,8 @@ func TestRelayerMisbehaviourDetection(t *testing.T) {
 	require.NoError(t, err)
 
 	// get latest height from prev client state above & create new height + 1
-	height := clientState.GetLatestHeight().(clienttypes.Height)
+	cs := clientState.(*ibccomettypes.ClientState)
+	height := cs.LatestHeight
 	newHeight := clienttypes.NewHeight(height.RevisionNumber, height.RevisionHeight+1)
 
 	// create a validator for signing duplicate header

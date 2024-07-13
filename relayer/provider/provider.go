@@ -9,7 +9,6 @@ import (
 	"github.com/cometbft/cometbft/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/gogoproto/proto"
-	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
 	conntypes "github.com/cosmos/ibc-go/v8/modules/core/03-connection/types"
 	chantypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
@@ -466,8 +465,8 @@ type QueryProvider interface {
 	QueryPacketReceipt(ctx context.Context, height int64, channelid, portid string, seq uint64) (recRes *chantypes.QueryPacketReceiptResponse, err error)
 
 	// ics 20 - transfer
-	QueryDenomTrace(ctx context.Context, denom string) (*transfertypes.DenomTrace, error)
-	QueryDenomTraces(ctx context.Context, offset, limit uint64, height int64) ([]transfertypes.DenomTrace, error)
+	//QueryDenomTrace(ctx context.Context, denom string) (*transfertypes.Hop, error)
+	//QueryDenomTraces(ctx context.Context, offset, limit uint64, height int64) ([]transfertypes.Hop, error)
 	QueryDenomHash(ctx context.Context, trace string) (string, error)
 }
 

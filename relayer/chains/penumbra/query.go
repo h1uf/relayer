@@ -19,7 +19,6 @@ import (
 	querytypes "github.com/cosmos/cosmos-sdk/types/query"
 	bankTypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
 	conntypes "github.com/cosmos/ibc-go/v8/modules/core/03-connection/types"
 	chantypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
@@ -511,10 +510,10 @@ func (cc *PenumbraProvider) GenerateConnHandshakeProof(ctx context.Context, heig
 	if err != nil {
 		return nil, nil, nil, nil, clienttypes.Height{}, err
 	}
-
+	scs := clientState.(*tmclient.ClientState)
 	eg.Go(func() error {
 		var err error
-		consensusStateRes, err = cc.QueryClientConsensusState(ctx, height, clientId, clientState.GetLatestHeight())
+		consensusStateRes, err = cc.QueryClientConsensusState(ctx, height, clientId, scs.LatestHeight)
 		return err
 	})
 	eg.Go(func() error {
@@ -829,30 +828,31 @@ func (cc *PenumbraProvider) QueryHeaderAtHeight(ctx context.Context, height int6
 	}, nil
 }
 
-// QueryDenomTrace takes a denom from IBC and queries the information about it
-func (cc *PenumbraProvider) QueryDenomTrace(ctx context.Context, denom string) (*transfertypes.DenomTrace, error) {
-	transfers, err := transfertypes.NewQueryClient(cc).DenomTrace(ctx,
-		&transfertypes.QueryDenomTraceRequest{
-			Hash: denom,
-		})
-	if err != nil {
-		return nil, err
-	}
-	return transfers.DenomTrace, nil
-}
-
-// QueryDenomTraces returns all the denom traces from a given chain
-// TODO add pagination support
-func (cc *PenumbraProvider) QueryDenomTraces(ctx context.Context, offset, limit uint64, height int64) ([]transfertypes.DenomTrace, error) {
-	transfers, err := transfertypes.NewQueryClient(cc).DenomTraces(ctx,
-		&transfertypes.QueryDenomTracesRequest{
-			Pagination: DefaultPageRequest(),
-		})
-	if err != nil {
-		return nil, err
-	}
-	return transfers.DenomTraces, nil
-}
+//
+//// QueryDenomTrace takes a denom from IBC and queries the information about it
+//func (cc *PenumbraProvider) QueryDenomTrace(ctx context.Context, denom string) (*transfertypes.Hop, error) {
+//	transfers, err := transfertypes.NewQueryClient(cc).(ctx,
+//		&transfertypes.QueryDenomTraceRequest{
+//			Hash: denom,
+//		})
+//	if err != nil {
+//		return nil, err
+//	}
+//	return transfers.DenomTrace, nil
+//}
+//
+//// QueryDenomTraces returns all the denom traces from a given chain
+//// TODO add pagination support
+//func (cc *PenumbraProvider) QueryDenomTraces(ctx context.Context, offset, limit uint64, height int64) ([]transfertypes.Hop, error) {
+//	transfers, err := transfertypes.NewQueryClient(cc).DenomTraces(ctx,
+//		&transfertypes.QueryDenomTracesRequest{
+//			Pagination: DefaultPageRequest(),
+//		})
+//	if err != nil {
+//		return nil, err
+//	}
+//	return transfers.DenomTraces, nil
+//}
 
 func (cc *PenumbraProvider) QueryDenomHash(ctx context.Context, trace string) (string, error) {
 	panic("not implemented")

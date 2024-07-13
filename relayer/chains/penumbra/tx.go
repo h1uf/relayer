@@ -583,6 +583,7 @@ func (cc *PenumbraProvider) ConnectionOpenTry(ctx context.Context, dstQueryProvi
 		Prefix:       dstPrefix,
 	}
 
+	scs := clientState.(*tmclient.ClientState)
 	// TODO: Get DelayPeriod from counterparty connection rather than using default value
 	msg := &conntypes.MsgConnectionOpenTry{
 		ClientId:             srcClientId,
@@ -598,7 +599,7 @@ func (cc *PenumbraProvider) ConnectionOpenTry(ctx context.Context, dstQueryProvi
 		ProofInit:       connStateProof,
 		ProofClient:     clientStateProof,
 		ProofConsensus:  consensusStateProof,
-		ConsensusHeight: clientState.GetLatestHeight().(clienttypes.Height),
+		ConsensusHeight: scs.LatestHeight,
 		Signer:          acc,
 	}
 
@@ -637,7 +638,7 @@ func (cc *PenumbraProvider) ConnectionOpenAck(ctx context.Context, dstQueryProvi
 	if err != nil {
 		return nil, err
 	}
-
+	scs := clientState.(*tmclient.ClientState)
 	msg := &conntypes.MsgConnectionOpenAck{
 		ConnectionId:             srcConnId,
 		CounterpartyConnectionId: dstConnId,
@@ -650,7 +651,7 @@ func (cc *PenumbraProvider) ConnectionOpenAck(ctx context.Context, dstQueryProvi
 		ProofTry:        connStateProof,
 		ProofClient:     clientStateProof,
 		ProofConsensus:  consensusStateProof,
-		ConsensusHeight: clientState.GetLatestHeight().(clienttypes.Height),
+		ConsensusHeight: scs.LatestHeight,
 		Signer:          acc,
 	}
 
@@ -1383,7 +1384,7 @@ func (cc *PenumbraProvider) MsgConnectionOpenTry(msgOpenInit provider.Connection
 		ConnectionId: msgOpenInit.ConnID,
 		Prefix:       msgOpenInit.CounterpartyCommitmentPrefix,
 	}
-
+	scs := proof.ClientState.(*tmclient.ClientState)
 	msg := &conntypes.MsgConnectionOpenTry{
 		ClientId:             msgOpenInit.CounterpartyClientID,
 		PreviousConnectionId: msgOpenInit.CounterpartyConnID,
@@ -1395,7 +1396,7 @@ func (cc *PenumbraProvider) MsgConnectionOpenTry(msgOpenInit provider.Connection
 		ProofInit:            proof.ConnectionStateProof,
 		ProofClient:          proof.ClientStateProof,
 		ProofConsensus:       proof.ConsensusStateProof,
-		ConsensusHeight:      proof.ClientState.GetLatestHeight().(clienttypes.Height),
+		ConsensusHeight:      scs.LatestHeight,
 		Signer:               signer,
 	}
 
@@ -1414,7 +1415,7 @@ func (cc *PenumbraProvider) MsgConnectionOpenAck(msgOpenTry provider.ConnectionI
 	if err != nil {
 		return nil, err
 	}
-
+	scs := proof.ClientState.(*tmclient.ClientState)
 	msg := &conntypes.MsgConnectionOpenAck{
 		ConnectionId:             msgOpenTry.CounterpartyConnID,
 		CounterpartyConnectionId: msgOpenTry.ConnID,
@@ -1427,7 +1428,7 @@ func (cc *PenumbraProvider) MsgConnectionOpenAck(msgOpenTry provider.ConnectionI
 		ProofTry:        proof.ConnectionStateProof,
 		ProofClient:     proof.ClientStateProof,
 		ProofConsensus:  proof.ConsensusStateProof,
-		ConsensusHeight: proof.ClientState.GetLatestHeight().(clienttypes.Height),
+		ConsensusHeight: scs.LatestHeight,
 		Signer:          signer,
 	}
 
@@ -1934,9 +1935,9 @@ func (cc *PenumbraProvider) InjectTrustedFields(ctx context.Context, header ibce
 	if err != nil {
 		return nil, err
 	}
-
+	scs := cs.(*tmclient.ClientState)
 	// inject TrustedHeight as latest height stored on dst client
-	h.TrustedHeight = cs.GetLatestHeight().(clienttypes.Height)
+	h.TrustedHeight = scs.LatestHeight
 
 	// NOTE: We need to get validators from the source chain at height: trustedHeight+1
 	// since the last trusted validators for a header at height h is the NextValidators

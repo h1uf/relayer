@@ -85,24 +85,24 @@ $ %s q ibc-denoms ibc-0`,
 			appName, appName,
 		)),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			chain, ok := a.config.Chains[args[0]]
-			if !ok {
-				return errChainNotFound(args[0])
-			}
-
-			h, err := chain.ChainProvider.QueryLatestHeight(cmd.Context())
-			if err != nil {
-				return err
-			}
-
-			res, err := chain.ChainProvider.QueryDenomTraces(cmd.Context(), 0, 100, h)
-			if err != nil {
-				return err
-			}
-
-			for _, d := range res {
-				fmt.Fprintln(cmd.OutOrStdout(), d)
-			}
+			//chain, ok := a.config.Chains[args[0]]
+			//if !ok {
+			//	return errChainNotFound(args[0])
+			//}
+			//
+			//h, err := chain.ChainProvider.QueryLatestHeight(cmd.Context())
+			//if err != nil {
+			//	return err
+			//}
+			//
+			//res, err := chain.ChainProvider.QueryDenomTraces(cmd.Context(), 0, 100, h)
+			//if err != nil {
+			//	return err
+			//}
+			//
+			//for _, d := range res {
+			//	fmt.Fprintln(cmd.OutOrStdout(), d)
+			//}
 			return nil
 		},
 	}
@@ -121,17 +121,17 @@ $ %s q denom-trace osmosis 9BBA9A1C257E971E38C1422780CE6F0B0686F0A3085E2D61118D9
 			appName, appName,
 		)),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			c, ok := a.config.Chains[args[0]]
-			if !ok {
-				return errChainNotFound(args[0])
-			}
-
-			res, err := c.ChainProvider.QueryDenomTrace(cmd.Context(), args[1])
-			if err != nil {
-				return err
-			}
-
-			fmt.Fprintln(cmd.OutOrStdout(), res)
+			//c, ok := a.config.Chains[args[0]]
+			//if !ok {
+			//	return errChainNotFound(args[0])
+			//}
+			//
+			//res, err := c.ChainProvider.QueryDenomTrace(cmd.Context(), args[1])
+			//if err != nil {
+			//	return err
+			//}
+			//
+			//fmt.Fprintln(cmd.OutOrStdout(), res)
 			return nil
 		},
 	}

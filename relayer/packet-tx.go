@@ -3,6 +3,7 @@ package relayer
 import (
 	"context"
 	"fmt"
+	tmclient "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
 	"time"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -40,7 +41,7 @@ func (c *Chain) SendTransferMsg(
 	if err != nil {
 		return err
 	}
-
+	scs := h.(*tmclient.ClientState)
 	// if the timestamp offset is set we need to query the dst chains consensus state to get the current time
 	var consensusState ibcexported.ConsensusState
 	if toTimeOffset > 0 {
@@ -53,12 +54,13 @@ func (c *Chain) SendTransferMsg(
 		if err != nil {
 			return fmt.Errorf("failed to unpack client state: %w", err)
 		}
+		cs := clientState.(*tmclient.ClientState)
 
 		consensusStateRes, err := dst.ChainProvider.QueryClientConsensusState(
 			ctx,
 			dsth,
 			dst.ClientID(),
-			clientState.GetLatestHeight(),
+			cs.LatestHeight,
 		)
 		if err != nil {
 			return fmt.Errorf("failed to query client consensus state: %w", err)
@@ -83,7 +85,7 @@ func (c *Chain) SendTransferMsg(
 		}
 	}
 
-	clientHeight := h.GetLatestHeight().GetRevisionHeight()
+	clientHeight := scs.LatestHeight.GetRevisionHeight()
 
 	switch {
 	case toHeightOffset > 0 && toTimeOffset > 0:
@@ -103,7 +105,7 @@ func (c *Chain) SendTransferMsg(
 		SourceChannel: srcChannel.ChannelId,
 		SourcePort:    srcChannel.PortId,
 		TimeoutHeight: clienttypes.Height{
-			RevisionNumber: h.GetLatestHeight().GetRevisionNumber(),
+			RevisionNumber: scs.LatestHeight.GetRevisionNumber(),
 			RevisionHeight: timeoutHeight,
 		},
 		TimeoutTimestamp: timeoutTimestamp,

@@ -8,7 +8,6 @@ import (
 	"strings"
 	"time"
 
-	sdkmath "cosmossdk.io/math"
 	"github.com/avast/retry-go/v4"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	chantypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
@@ -232,47 +231,47 @@ func QueryIBCHeaders(ctx context.Context, src, dst *Chain, srch, dsth int64) (sr
 
 // QueryBalance is a helper function for query balance
 func QueryBalance(ctx context.Context, chain *Chain, address string, showDenoms bool) (sdk.Coins, error) {
-	coins, err := chain.ChainProvider.QueryBalanceWithAddress(ctx, address)
-	if err != nil {
-		return nil, err
-	}
-
-	if showDenoms {
-		return coins, nil
-	}
-
-	h, err := chain.ChainProvider.QueryLatestHeight(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	dts, err := chain.ChainProvider.QueryDenomTraces(ctx, 0, 1000, h)
-	if err != nil {
-		return nil, err
-	}
-
-	if len(dts) == 0 {
-		return coins, nil
-	}
-
-	var out sdk.Coins
-	for _, c := range coins {
-		if c.Amount.Equal(sdkmath.NewInt(0)) {
-			continue
-		}
-
-		for i, d := range dts {
-			if strings.EqualFold(c.Denom, d.IBCDenom()) {
-				out = append(out, sdk.Coin{Denom: d.GetFullDenomPath(), Amount: c.Amount})
-				break
-			}
-
-			if i == len(dts)-1 {
-				out = append(out, c)
-			}
-		}
-	}
-	return out, nil
+	return chain.ChainProvider.QueryBalanceWithAddress(ctx, address)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//return coins, nil
+	//if showDenoms {
+	//	return coins, nil
+	//}
+	//
+	//h, err := chain.ChainProvider.QueryLatestHeight(ctx)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//
+	//dts, err := chain.ChainProvider.QueryDenomTraces(ctx, 0, 1000, h)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//
+	//if len(dts) == 0 {
+	//	return coins, nil
+	//}
+	//
+	//var out sdk.Coins
+	//for _, c := range coins {
+	//	if c.Amount.Equal(sdkmath.NewInt(0)) {
+	//		continue
+	//	}
+	//
+	//	for i, d := range dts {
+	//		if strings.EqualFold(c.Denom, d.IBCDenom()) {
+	//			out = append(out, sdk.Coin{Denom: d.GetFullDenomPath(), Amount: c.Amount})
+	//			break
+	//		}
+	//
+	//		if i == len(dts)-1 {
+	//			out = append(out, c)
+	//		}
+	//	}
+	//}
+	//return out, nil
 }
 
 func QueryClientExpiration(ctx context.Context, src, dst *Chain) (time.Time, ClientStateInfo, error) {
