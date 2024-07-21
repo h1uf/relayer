@@ -3,13 +3,13 @@ package relayer
 import (
 	"context"
 	"fmt"
-	tmclient "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
+	tmclient "github.com/cosmos/ibc-go/v9/modules/light-clients/07-tendermint"
 	"time"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
-	chantypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
-	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
+	clienttypes "github.com/cosmos/ibc-go/v9/modules/core/02-client/types"
+	chantypes "github.com/cosmos/ibc-go/v9/modules/core/04-channel/types"
+	ibcexported "github.com/cosmos/ibc-go/v9/modules/core/exported"
 	"github.com/cosmos/relayer/v2/relayer/provider"
 	"go.uber.org/zap"
 )
