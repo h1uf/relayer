@@ -3,6 +3,7 @@ package interchaintest
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -254,7 +255,7 @@ func (r *Relayer) UpdateClients(ctx context.Context, _ ibc.RelayerExecReporter, 
 
 func (r *Relayer) StartRelayer(ctx context.Context, _ ibc.RelayerExecReporter, pathNames ...string) error {
 	if r.errCh != nil || r.cancel != nil {
-		panic(fmt.Errorf("StartRelayer called multiple times without being stopped"))
+		panic(errors.New("StartRelayer called multiple times without being stopped"))
 	}
 
 	r.errCh = make(chan error, 1)
@@ -289,7 +290,7 @@ func (r *Relayer) start(ctx context.Context, remainingArgs ...string) {
 	// Start the debug server on a random port.
 	// It won't be reachable without introspecting the output,
 	// but this will allow catching any possible data races around the debug server.
-	args := append([]string{"start", "--debug-addr", "localhost:0"}, remainingArgs...)
+	args := append([]string{"start", "--enable-debug-server", "--debug-listen-addr", "localhost:0", "--enable-metrics-server", "--metrics-listen-addr", "localhost:0"}, remainingArgs...)
 	res := r.Sys().RunC(ctx, r.log(), args...)
 	if res.Err != nil {
 		r.errCh <- res.Err
