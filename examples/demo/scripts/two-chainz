@@ -5,16 +5,9 @@ SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 GAIA_DATA="$(pwd)/data"
 RELAYER_DIR="$(dirname $SCRIPTDIR)"
 RELAYER_CONF="$HOME/.relayer"
+BINARY=/Users/anya/projects/ibc-go/build/simd
 
-# Ensure gaiad is installed
-if ! [ -x "$(which gaiad)" ]; then
-  echo "Error: gaiad is not installed. Try running 'make build-gaia'" >&2
-  exit 1
-fi
 
-# Display software version for testers
-echo "GAIA VERSION INFO:"
-gaiad version --long
 
 # Ensure jq is installed
 if [[ ! -x "$(which jq)" ]]; then
@@ -36,10 +29,6 @@ fi
 rm -rf $GAIA_DATA &> /dev/null
 rm -rf $RELAYER_CONF &> /dev/null
 
-# Stop existing gaiad processes
-killall gaiad &> /dev/null
-killall akash &> /dev/null
-
 set -e
 
 chainid0=ibc-0
@@ -47,8 +36,8 @@ chainid1=ibc-1
 
 echo "Generating gaia configurations..."
 mkdir -p $GAIA_DATA && cd $GAIA_DATA && cd ../
-./scripts/one-chain gaiad $chainid0 ./data 26657 26656 6060 9090 stake samoleans
-./scripts/one-chain gaiad $chainid1 ./data 26557 26556 6061 9091 rice beans
+./scripts/one-chain $BINARY $chainid0 ./data 26657 26656 6060 9090 stake samoleans
+./scripts/one-chain $BINARY $chainid1 ./data 26557 26556 6061 9091 rice beans
 
 [ -f $GAIA_DATA/$chainid0.log ] && echo "$chainid0 initialized. Watch file $GAIA_DATA/$chainid0.log to see its execution."
 [ -f $GAIA_DATA/$chainid1.log ] && echo "$chainid1 initialized. Watch file $GAIA_DATA/$chainid1.log to see its execution."
