@@ -5,7 +5,7 @@ SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 GAIA_DATA="$(pwd)/data"
 RELAYER_DIR="$(dirname $SCRIPTDIR)"
 RELAYER_CONF="$HOME/.relayer"
-BINARY=/Users/anya/projects/ibc-go/build/simd
+BINARY=<your_path_to_simd>/simd
 
 
 
