@@ -24,3 +24,5 @@ sleep 3
 # creates clients, connections and channels (all this happens in rly tx command)
 rly tx link demo -d -t 3s -v ics20-2
 sleep 2
+
+#rly tx flush demo channel-0

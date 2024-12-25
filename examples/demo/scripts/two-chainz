@@ -59,3 +59,4 @@ echo "Key $(rly keys restore ibc-0 testkey "$SEED0") imported from ibc-0 to rela
 echo "Key $(rly keys restore ibc-1 testkey "$SEED1") imported from ibc-1 to relayer..."
 
 rly paths add-dir configs/paths
+ln -s  $CHAINDIR/$CHAINID/keyring-test $(pwd)/keys/ibc-0/keyring-test
