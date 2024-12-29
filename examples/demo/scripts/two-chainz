@@ -2,10 +2,9 @@
 # two-chainz creates two gaiad chains and configures the relayer to 
 
 SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-GAIA_DATA="$(pwd)/data"
 RELAYER_DIR="$(dirname $SCRIPTDIR)"
 RELAYER_CONF="$HOME/.relayer"
-BINARY=<your_path_to_simd>/simd
+
 
 
 
@@ -53,15 +52,13 @@ echo "Generating rly configurations..."
 rly config init
 rly chains add-dir configs/chains
 
-SEED0=$(jq -r '.mnemonic' $GAIA_DATA/ibc-0/key_seed.json)
-SEED1=$(jq -r '.mnemonic' $GAIA_DATA/ibc-1/key_seed.json)
+SEED0=$(jq -r '.mnemonic' $GAIA_DATA/ibc-0/user_seed.json)
+SEED1=$(jq -r '.mnemonic' $GAIA_DATA/ibc-1/user_seed.json)
 echo "Key $(rly keys restore ibc-0 testkey "$SEED0") imported from ibc-0 to relayer..."
 echo "Key $(rly keys restore ibc-1 testkey "$SEED1") imported from ibc-1 to relayer..."
 
 rly paths add-dir configs/paths
 
-ATTACKERS_SEED0=$(jq -r '.mnemonic' $GAIA_DATA/ibc-0/attacker_seed.json)
-ATTACKERS_SEED1=$(jq -r '.mnemonic' $GAIA_DATA/ibc-1/attacker_seed.json)
 
 echo $ATTACKERS_SEED0
 echo $ATTACKERS_SEED1

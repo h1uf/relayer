@@ -2,7 +2,8 @@
 RELAYER_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 RELAYER_CONF="$HOME/.relayer"
 GAIA_CONF="$(pwd)/data"
-
+export BINARY=/Users/anya/projects/ibc-go/build/simd
+export GAIA_DATA="$(pwd)/data"
 # Ensure user understands what will be deleted
 if ([[ -d $RELAYER_CONF ]] || [[ -d $GAIA_CONF ]]) && [[ ! "$1" == "skip" ]]; then
   read -p "$0 will delete \$HOME/.relayer and \$(pwd)/data folder. Do you wish to continue? (y/n): " -n 1 -r
@@ -25,3 +26,7 @@ sleep 3
 rly tx link demo -d -t 3s -v ics20-2
 sleep 2
 
+echo "Run 'rly start and run active_channel.go, press ENTER after everything is up"
+read
+
+./script.sh connection-0
