@@ -1,5 +1,5 @@
 #!/bin/bash
-OWNER=$($BINARY --home $GAIA_DATA/ibc-0 keys  show user -a --keyring-backend="test")
+OWNER=$($BINARY --home $GAIA_DATA/ibc-0 keys  show validator -a --keyring-backend="test")
 
 CONTR_CONN=$1
 HOST_CONN=$CONTR_CONN
