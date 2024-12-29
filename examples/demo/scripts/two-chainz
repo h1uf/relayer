@@ -27,7 +27,7 @@ fi
 # Delete data from old runs
 rm -rf $GAIA_DATA &> /dev/null
 rm -rf $RELAYER_CONF &> /dev/null
-
+killall simd
 set -e
 
 chainid0=ibc-0
