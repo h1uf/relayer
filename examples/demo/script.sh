@@ -3,7 +3,7 @@ OWNER=$($BINARY --home $GAIA_DATA/ibc-0 keys  show validator -a --keyring-backen
 
 CONTR_CONN=$1
 HOST_CONN=$CONTR_CONN
-FROM=user
+FROM=$OWNER
 OLD_ENCODING=proto3json
 NEW_ENCODING=proto3
 
